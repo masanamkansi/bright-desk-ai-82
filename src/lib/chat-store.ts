@@ -10,7 +10,7 @@ export interface ChatThread {
   updatedAt: number;
 }
 
-function readThreads(): ChatThread[] {
+export function readThreads(): ChatThread[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(THREADS_KEY);
