@@ -1,65 +1,29 @@
-## AI Workplace Productivity Assistant
+The app already matches your spec — built as "Workly AI" with no login, all 5 AI tools, sidebar dashboard, editable outputs, and the Responsible AI notice. No new build is needed unless something is off.
 
-A SaaS-style dashboard with 5 AI-powered tools (Email Generator, Meeting Summarizer, Task Planner, Research Assistant, Chatbot), built on TanStack Start + Lovable AI Gateway. No login — single-user, browser-local.
+## What's already in place
+- **Design tokens** (`src/styles.css`): Primary #2563EB, Secondary #0F172A, Accent #38BDF8, Background #F8FAFC, Inter font, rounded cards, soft shadows.
+- **Sidebar nav** (`AppSidebar`): Dashboard, Email, Summarizer, Planner, Research, Chatbot, Settings; collapsible on tablet, off-canvas on mobile.
+- **Dashboard** (`/`): 4 KPI cards (Emails, Summaries, Plans, Research) driven by localStorage + Quick Actions.
+- **5 AI features** wired to Lovable AI Gateway (`google/gemini-3-flash-preview`) with the exact structured prompts from your spec:
+  - `/email` — recipient/subject/purpose/tone (formal, friendly, persuasive)
+  - `/summarize` — paste notes → Key Points / Decisions / Action Items / Deadlines
+  - `/planner` — tasks + hours + priority → time-block schedule
+  - `/research` — topic → Summary / Insights / Opportunities / Recommendations
+  - `/chat/$threadId` — threaded chatbot with suggested prompts, streaming, localStorage history
+- **Editable AI Output** component: editable textarea + Copy / Save (.txt) / Regenerate.
+- **Responsible AI Notice** under every AI result and in chat.
+- **Settings**: clear all local data.
 
-### Stack & setup
-- Enable Lovable AI Gateway (model: `google/gemini-3-flash-preview`)
-- No auth, no database — all state in `localStorage`
-- shadcn/ui, Tailwind, Inter font, design tokens from spec (#2563EB primary, #0F172A secondary, #38BDF8 accent, #F8FAFC bg)
+## Proposal
+Rather than rebuild, I'll do a quick verification pass and fix any gaps:
+1. Open Dashboard, Email, Summarizer, Planner, Research, Chat — confirm each renders, generates, and KPI counters increment.
+2. Check responsive behavior at mobile / tablet / desktop widths.
+3. Confirm Copy / Save / Regenerate work on every output page.
+4. Patch any small issues found (e.g. the `chat.$threadId` thread-bootstrap effect currently has a minor `void` typo I'd clean up while I'm there).
 
-### Routes (all public)
-- `/` — Dashboard (KPI cards + Quick Actions)
-- `/email` — Smart Email Generator
-- `/summarize` — Meeting Notes Summarizer
-- `/planner` — AI Task Planner
-- `/research` — Research Assistant
-- `/chat` — Redirects to active/new thread
-- `/chat/$threadId` — Threaded chat
-- `/settings` — Preferences (theme, clear data)
+If you want anything *added* beyond the current build (e.g. drag-and-drop in Planner, PDF/calendar export, file upload for meeting notes — all currently out of scope), tell me which and I'll fold them in.
 
-### Storage (localStorage)
-- `wpa:generations` — array of `{ id, type: email|summary|plan|research, input, output, createdAt }` powers KPI counters and recent history
-- `wpa:chat:threads` — `[{ id, title, updatedAt }]`
-- `wpa:chat:messages:<threadId>` — AI SDK `UIMessage[]` per thread
-- Idempotent bootstrap on first render (guarded against StrictMode double-mount)
-
-### AI server functions (`src/lib/ai.functions.ts`)
-Each uses `createServerFn`, calls Lovable AI Gateway with the structured prompts from the spec, returns text. Client persists results to localStorage and bumps KPI counts.
-- `generateEmail({ recipient, subject, purpose, tone })`
-- `summarizeNotes({ notes })`
-- `planTasks({ tasks, hours, priority })`
-- `researchTopic({ topic })`
-
-### Chat
-- Threaded, localStorage-persisted per browser
-- Real route `/chat/$threadId`, thread sidebar with new/delete (no nested buttons)
-- Streaming via `/api/chat` server route + `useChat` (AI SDK)
-- Install AI Elements: `conversation message prompt-input shimmer`
-- Suggested prompts on empty state; textarea autofocuses
-
-### Shared UI
-- `AppSidebar` (shadcn sidebar, collapsible) with nav items + logo
-- `KpiCard`, `QuickActionCard` for dashboard
-- `EditableAIOutput`: editable textarea + Copy / Save (download .txt) / Regenerate
-- `ResponsibleAINotice` shown under every AI result
-- Header with `SidebarTrigger`
-
-### Design
-- Inter via Google Fonts
-- Tailwind tokens in `src/styles.css` updated to spec palette (oklch equivalents)
-- Rounded cards, soft shadows, generous spacing
-- Responsive: sidebar collapses on tablet, off-canvas on mobile
-
-### Out of scope (v1)
-- Drag-and-drop task editing (render schedule as styled list with priority badges)
-- Calendar/PDF export (download as plain text)
-- File upload for meeting notes (textarea paste only)
-
-### Build order
-1. Enable AI Gateway, update design tokens + Inter font, install AI Elements
-2. AppSidebar shell, root layout, dashboard skeleton
-3. AI server functions + shared `EditableAIOutput` + `ResponsibleAINotice` + localStorage helpers
-4. Email, Summarizer, Planner, Research pages
-5. Chat: `/api/chat` route, threads list, `/chat/$threadId`
-6. Dashboard KPI wiring from localStorage
-7. Settings (clear data) + responsive polish
+## Out of scope unless you ask
+- Login/signup (you removed it)
+- Database persistence (using localStorage per your choice)
+- Drag-and-drop task editing, PDF/ICS export, file upload
