@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { createThread, readThreads } from "@/lib/chat-store";
 
@@ -6,11 +7,17 @@ export const Route = createFileRoute("/chat/")({
   head: () => ({
     meta: [{ title: "AI Chatbot — Workly AI" }],
   }),
-  component: () => null,
-  beforeLoad: () => {
-    if (typeof window === "undefined") return;
+  component: ChatIndex,
+});
+
+function ChatIndex() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
     const threads = readThreads();
     const target = threads[0] ?? createThread();
-    throw redirect({ to: "/chat/$threadId", params: { threadId: target.id } });
-  },
-});
+    navigate({ to: "/chat/$threadId", params: { threadId: target.id }, replace: true });
+  }, [navigate]);
+
+  return null;
+}
