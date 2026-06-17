@@ -86,8 +86,6 @@ function ChatPage() {
           onDelete={(id) => {
             deleteThread(id);
             if (id === threadId) {
-              const remaining = readMessages.length;
-              void remaining;
               navigate({ to: "/chat" });
             }
           }}
